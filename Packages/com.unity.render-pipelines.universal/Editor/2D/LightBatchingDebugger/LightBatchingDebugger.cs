@@ -89,7 +89,7 @@ namespace UnityEditor.Rendering.Universal
                         batchInfo.Lights.Add(light);
                     }
                 }
-
+                /*
                 // Get the shadows
                 var visibleShadows = lightCullResult.visibleShadows.SelectMany(x => x.GetShadowCasters());
                 foreach (var shadowCaster in visibleShadows)
@@ -97,12 +97,12 @@ namespace UnityEditor.Rendering.Universal
                     if (shadowCaster.IsShadowedLayer(batch.startLayerID))
                         batchInfo.Shadows.Add(shadowCaster);
                 }
-
+                */
                 for (var batchIndex = batch.startIndex; batchIndex <= batch.endIndex; batchIndex++)
                 {
                     batchInfo.LayerNames.Add(layers[batchIndex].name);
                 }
-
+                
                 batchList.Add(batchInfo);
             }
 
@@ -463,7 +463,7 @@ namespace UnityEditor.Rendering.Universal
             if (lightCullResult != null)
             {
                 isDirty |= totalLightCount != lightCullResult.visibleLights.Count();
-                isDirty |= totalShadowCount != lightCullResult.visibleShadows.Count();
+                //isDirty |= totalShadowCount != lightCullResult.visibleShadows.Count();
             }
 
             return isDirty;
@@ -479,7 +479,7 @@ namespace UnityEditor.Rendering.Universal
             if (lightCullResult != null)
             {
                 totalLightCount = lightCullResult.visibleLights.Count();
-                totalShadowCount = lightCullResult.visibleShadows.Count();
+                //totalShadowCount = lightCullResult.visibleShadows.Count();
             }
 
             doRefresh = false;

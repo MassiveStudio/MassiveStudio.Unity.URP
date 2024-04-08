@@ -17,6 +17,11 @@ namespace UnityEngine.Rendering.Universal
         private static readonly string k_UseAdditiveBlendingKeyword = "USE_ADDITIVE_BLENDING";
         private static readonly string k_UseVolumetric = "USE_VOLUMETRIC";
 
+
+
+        public static Light2D GLOBALLIGHT = null;
+
+
         private static readonly string[] k_UseBlendStyleKeywords =
         {
             "USE_SHAPE_LIGHT_TYPE_0", "USE_SHAPE_LIGHT_TYPE_1", "USE_SHAPE_LIGHT_TYPE_2", "USE_SHAPE_LIGHT_TYPE_3"
@@ -78,7 +83,7 @@ namespace UnityEngine.Rendering.Universal
 
         // Light Batcher.
         internal static LightBatch lightBatch = new LightBatch();
-
+        /*
         private static GraphicsFormat GetRenderTextureFormat()
         {
             if (!s_HasSetupRenderTextureFormatToUse)
@@ -93,7 +98,7 @@ namespace UnityEngine.Rendering.Universal
 
             return s_RenderTextureFormatToUse;
         }
-
+        /*
         public static void CreateNormalMapRenderTexture(this IRenderPass2D pass, RenderingData renderingData, CommandBuffer cmd, float renderScale)
         {
             var descriptor = new RenderTextureDescriptor(
@@ -127,7 +132,7 @@ namespace UnityEngine.Rendering.Universal
 
             return descriptor;
         }
-
+        */
         public static void CreateCameraSortingLayerRenderTexture(this IRenderPass2D pass, RenderingData renderingData, CommandBuffer cmd, Downsampling downsamplingMethod)
         {
             var renderTextureScale = 1.0f;
@@ -193,7 +198,7 @@ namespace UnityEngine.Rendering.Universal
                     break;
             }
         }
-
+        /*
         private static bool CanRenderLight(IRenderPass2D pass, Light2D light, int blendStyleIndex, int layerToRender, bool isVolume, ref Mesh lightMesh, ref Material lightMaterial)
         {
             if (light != null && light.lightType != Light2D.LightType.Global && light.blendStyleIndex == blendStyleIndex && light.IsLitLayer(layerToRender))
@@ -237,8 +242,8 @@ namespace UnityEngine.Rendering.Universal
                 lightBatch.Flush(cmd);
 
             // Set the shadow texture to read from
-            if (hasShadows)
-                ShadowRendering.SetGlobalShadowTexture(cmd, light, shadowLightCount++);
+            //if (hasShadows)
+            //    ShadowRendering.SetGlobalShadowTexture(cmd, light, shadowLightCount++);
 
             var slotIndex = lightBatch.SlotIndex(light.batchSlotIndex);
             SetPerLightShaderGlobals(cmd, light, slotIndex, isVolume, hasShadows, batchingSupported);
@@ -409,7 +414,7 @@ namespace UnityEngine.Rendering.Universal
 
             doesLightAtIndexHaveShadows.Dispose();
         }
-
+        */
         public static void SetLightShaderGlobals(Renderer2DData rendererData, CommandBuffer cmd)
         {
             for (var i = 0; i < rendererData.lightBlendStyles.Length; i++)
@@ -522,7 +527,7 @@ namespace UnityEngine.Rendering.Universal
 
             return hasCookies;
         }
-
+        /*
         public static void ClearDirtyLighting(this IRenderPass2D pass, CommandBuffer cmd, uint blendStylesUsed)
         {
             for (var i = 0; i < pass.rendererData.lightBlendStyles.Length; ++i)
@@ -580,8 +585,26 @@ namespace UnityEngine.Rendering.Universal
 
         public static void RenderLights(this IRenderPass2D pass, RenderingData renderingData, CommandBuffer cmd, int layerToRender, ref LayerBatch layerBatch, ref RenderTextureDescriptor rtDesc)
         {
+            if (GLOBALLIGHT == null)
+            {
+                GLOBALLIGHT = new Light2D()
+                {
+                    enabled = true,
+                    intensity = 1,
+                    color = Color.blue,
+                    lightType = Light2D.LightType.Global
+                };
+            }
+
+
             // Before rendering the lights cache some values that are expensive to get/calculate
             var culledLights = pass.rendererData.lightCullResult.visibleLights;
+
+            culledLights = new List<Light2D>()
+            {
+                GLOBALLIGHT
+            };
+
             for (var i = 0; i < culledLights.Count; i++)
             {
                 culledLights[i].CacheValues();
@@ -631,7 +654,7 @@ namespace UnityEngine.Rendering.Universal
                 cmd.EndSample(sampleName);
             }
         }
-
+        */
         private static void SetBlendModes(Material material, BlendMode src, BlendMode dst)
         {
             material.SetFloat(k_SrcBlendID, (float)src);

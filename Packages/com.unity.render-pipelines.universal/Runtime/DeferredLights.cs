@@ -625,11 +625,7 @@ namespace UnityEngine.Rendering.Universal.Internal
         {
             ref CameraData cameraData = ref renderingData.cameraData;
 
-#if ENABLE_VR && ENABLE_XR_MODULE
-            int eyeCount = cameraData.xr.enabled && cameraData.xr.singlePassEnabled ? 2 : 1;
-#else
             int eyeCount = 1;
-#endif
             Matrix4x4[] screenToWorld = m_ScreenToWorld; // deferred shaders expects 2 elements
 
             for (int eyeIndex = 0; eyeIndex < eyeCount; eyeIndex++)

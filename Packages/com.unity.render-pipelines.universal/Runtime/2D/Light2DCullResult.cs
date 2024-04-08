@@ -20,7 +20,7 @@ namespace UnityEngine.Rendering.Universal
     internal interface ILight2DCullResult
     {
         List<Light2D> visibleLights { get; }
-        HashSet<ShadowCasterGroup2D> visibleShadows { get; }
+        //HashSet<ShadowCasterGroup2D> visibleShadows { get; }
         LightStats GetLightStatsByLayer(int layer);
         bool IsSceneLit();
 
@@ -34,8 +34,8 @@ namespace UnityEngine.Rendering.Universal
     {
         private List<Light2D> m_VisibleLights = new List<Light2D>();
         public List<Light2D> visibleLights => m_VisibleLights;
-        private HashSet<ShadowCasterGroup2D> m_VisibleShadows = new HashSet<ShadowCasterGroup2D>();
-        public HashSet<ShadowCasterGroup2D> visibleShadows => m_VisibleShadows;
+        //private HashSet<ShadowCasterGroup2D> m_VisibleShadows = new HashSet<ShadowCasterGroup2D>();
+        //public HashSet<ShadowCasterGroup2D> visibleShadows => m_VisibleShadows;
 #if UNITY_EDITOR
         bool m_IsGameView;
 #endif
@@ -122,7 +122,7 @@ namespace UnityEngine.Rendering.Universal
             // must be sorted here because light order could change
             m_VisibleLights.Sort((l1, l2) => l1.lightOrder - l2.lightOrder);
 
-            m_VisibleShadows.Clear();
+            /*m_VisibleShadows.Clear();
             if (ShadowCasterGroup2DManager.shadowCasterGroups != null)
             {
                 foreach(var group in ShadowCasterGroup2DManager.shadowCasterGroups)
@@ -147,7 +147,7 @@ namespace UnityEngine.Rendering.Universal
                         }
                     }
                 }
-            }
+            }*/
 
             Profiler.EndSample();
         }

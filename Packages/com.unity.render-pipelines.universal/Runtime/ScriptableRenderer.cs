@@ -220,15 +220,6 @@ namespace UnityEngine.Rendering.Universal
 
         internal static void SetCameraMatrices(RasterCommandBuffer cmd, ref CameraData cameraData, bool setInverseMatrices, bool isTargetFlipped)
         {
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (cameraData.xr.enabled)
-            {
-                cameraData.PushBuiltinShaderConstantsXR(cmd, isTargetFlipped);
-                XRSystemUniversal.MarkShaderProperties(cmd, cameraData.xrUniversal, isTargetFlipped);
-                return;
-            }
-#endif
-
             // NOTE: the URP default main view/projection matrices are the CameraData view/projection matrices.
             Matrix4x4 viewMatrix = cameraData.GetViewMatrix();
             Matrix4x4 projectionMatrix = cameraData.GetProjectionMatrix(); // Jittered, non-gpu
@@ -285,15 +276,6 @@ namespace UnityEngine.Rendering.Universal
             float scaledCameraHeight = (float)cameraData.cameraTargetDescriptor.height;
             float cameraWidth = (float)camera.pixelWidth;
             float cameraHeight = (float)camera.pixelHeight;
-
-            // Use eye texture's width and height as screen params when XR is enabled
-            if (cameraData.xr.enabled)
-            {
-                cameraWidth = (float)cameraData.cameraTargetDescriptor.width;
-                cameraHeight = (float)cameraData.cameraTargetDescriptor.height;
-
-                useRenderPassEnabled = false;
-            }
 
             if (camera.allowDynamicResolution)
             {
@@ -1031,31 +1013,6 @@ namespace UnityEngine.Rendering.Universal
 
         internal void BeginRenderGraphXRRendering(RenderGraph renderGraph, ref RenderingData renderingData)
         {
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (!renderingData.cameraData.xr.enabled)
-                return;
-
-            using (var builder = renderGraph.AddRasterRenderPass<BeginXRPassData>("BeginXRRendering", out var passData,
-                Profiling.beginXRRendering))
-            {
-                passData.renderingData = renderingData;
-                passData.cameraData = renderingData.cameraData;
-
-                builder.AllowPassCulling(false);
-
-                builder.SetRenderFunc((BeginXRPassData data, RasterGraphContext context) =>
-                {
-                    ref var cameraData = ref data.cameraData;
-                    if (cameraData.xr.enabled)
-                    {
-                        if (cameraData.xrUniversal.isLateLatchEnabled)
-                            cameraData.xrUniversal.canMarkLateLatch = true;
-
-                        cameraData.xr.StartSinglePass(context.cmd);
-                    }
-                });
-            }
-#endif
         }
 
         private class EndXRPassData
@@ -1066,28 +1023,7 @@ namespace UnityEngine.Rendering.Universal
 
         internal void EndRenderGraphXRRendering(RenderGraph renderGraph, ref RenderingData renderingData)
         {
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (!renderingData.cameraData.xr.enabled)
-                return;
 
-            using (var builder = renderGraph.AddRasterRenderPass<EndXRPassData>("EndXRRendering", out var passData,
-                Profiling.endXRRendering))
-            {
-                passData.renderingData = renderingData;
-                passData.cameraData = renderingData.cameraData;
-
-                builder.AllowPassCulling(false);
-
-                builder.SetRenderFunc((EndXRPassData data, RasterGraphContext context) =>
-                {
-                    ref var cameraData = ref data.cameraData;
-                    if (cameraData.xr.enabled)
-                    {
-                        cameraData.xr.StopSinglePass(context.cmd);
-                    }
-                });
-            }
-#endif
         }
 
         private class PassData
@@ -1209,7 +1145,7 @@ namespace UnityEngine.Rendering.Universal
 
             // TODO: move skybox code from C++ to URP in order to remove the call to context.Submit() inside DrawSkyboxPass
             // Until then, we can't use nested profiling scopes with XR multipass
-            CommandBuffer cmdScope = renderingData.cameraData.xr.enabled ? null : cmd;
+            CommandBuffer cmdScope = cmd;
 
             using (new ProfilingScope(cmdScope, profilingExecute))
             {
@@ -1321,12 +1257,6 @@ namespace UnityEngine.Rendering.Universal
                     ExecuteBlock(RenderPassBlock.MainRenderingTransparent, in renderBlocks, context, ref renderingData);
                 }
 
-#if ENABLE_VR && ENABLE_XR_MODULE
-                // Late latching is not supported after this point in the frame
-                if (cameraData.xr.enabled)
-                    cameraData.xrUniversal.canMarkLateLatch = false;
-#endif
-
                 // Draw Gizmos...
                 if (drawGizmos)
                 {
@@ -1409,8 +1339,8 @@ namespace UnityEngine.Rendering.Universal
                 return ClearFlag.All;
 
             // XRTODO: remove once we have visible area of occlusion mesh available
-            if (cameraClearFlags == CameraClearFlags.Skybox && RenderSettings.skybox != null && cameraData.postProcessEnabled && cameraData.xr.enabled)
-                return ClearFlag.All;
+            //if (cameraClearFlags == CameraClearFlags.Skybox && RenderSettings.skybox != null && cameraData.postProcessEnabled && cameraData.xr.enabled)
+            //    return ClearFlag.All;
 
             if ((cameraClearFlags == CameraClearFlags.Skybox && RenderSettings.skybox != null) ||
                 cameraClearFlags == CameraClearFlags.Nothing)
@@ -1566,13 +1496,13 @@ namespace UnityEngine.Rendering.Universal
                 SetRenderPassAttachments(cmd, renderPass, ref cameraData);
 
             // Selectively enable foveated rendering
-            if (cameraData.xr.supportsFoveatedRendering)
+            /*if (cameraData.xr.supportsFoveatedRendering)
             {
                 if (renderPass.renderPassEvent >= RenderPassEvent.BeforeRenderingPrePasses && renderPass.renderPassEvent < RenderPassEvent.BeforeRenderingPostProcessing)
                 {
                     cmd.SetFoveatedRenderingMode(FoveatedRenderingMode.Enabled);
                 }
-            }
+            }*/
 
             // Also, we execute the commands recorded at this point to ensure SetRenderTarget is called before RenderPass.Execute
             context.ExecuteCommandBuffer(cmd);
@@ -1583,18 +1513,6 @@ namespace UnityEngine.Rendering.Universal
             else
             {
                 renderPass.Execute(context, ref renderingData);
-                context.ExecuteCommandBuffer(cmd);
-                cmd.Clear();
-            }
-
-            if (cameraData.xr.enabled)
-            {
-                if (cameraData.xr.supportsFoveatedRendering)
-                    cmd.SetFoveatedRenderingMode(FoveatedRenderingMode.Disabled);
-
-                // Inform the late latching system for XR once we're done with a render pass
-                XRSystemUniversal.UnmarkShaderProperties(CommandBufferHelpers.GetRasterCommandBuffer(cmd), cameraData.xrUniversal);
-
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
             }
@@ -1646,10 +1564,7 @@ namespace UnityEngine.Rendering.Universal
                 // { ...
                 // }
                 var depthTargetID = m_CameraDepthTarget.nameID;
-#if ENABLE_VR && ENABLE_XR_MODULE
-                if (cameraData.xr.enabled)
-                    depthTargetID = new RenderTargetIdentifier(depthTargetID, 0, CubemapFace.Unknown, -1);
-#endif
+
                 if (renderPass.depthAttachment == depthTargetID && m_FirstTimeCameraDepthTargetIsBound)
                 {
                     m_FirstTimeCameraDepthTargetIsBound = false;
@@ -1733,18 +1648,6 @@ namespace UnityEngine.Rendering.Universal
                                 SetRenderTarget(cmd, trimmedAttachments, depthAttachment, finalClearFlag, renderPass.clearColor);
                             }
                         }
-
-#if ENABLE_VR && ENABLE_XR_MODULE
-                        if (cameraData.xr.enabled)
-                        {
-                            // SetRenderTarget might alter the internal device state(winding order).
-                            // Non-stereo buffer is already updated internally when switching render target. We update stereo buffers here to keep the consistency.
-                            int xrTargetIndex = RenderingUtils.IndexOf(renderPass.colorAttachments, cameraData.xr.renderTarget);
-                            bool renderIntoTexture = xrTargetIndex == -1;
-                            cameraData.PushBuiltinShaderConstantsXR(CommandBufferHelpers.GetRasterCommandBuffer(cmd), renderIntoTexture);
-                            XRSystemUniversal.MarkShaderProperties(CommandBufferHelpers.GetRasterCommandBuffer(cmd), cameraData.xrUniversal, renderIntoTexture);
-                        }
-#endif
                     }
                 }
             }
@@ -1855,17 +1758,6 @@ namespace UnityEngine.Rendering.Universal
                             SetRenderTarget(cmd, passColorAttachment.handle, passDepthAttachment.handle, finalClearFlag, finalClearColor, renderPass.colorStoreActions[0], renderPass.depthStoreAction);
                         else
                             SetRenderTarget(cmd, passColorAttachment.fallback, passDepthAttachment.fallback, finalClearFlag, finalClearColor, renderPass.colorStoreActions[0], renderPass.depthStoreAction);
-
-#if ENABLE_VR && ENABLE_XR_MODULE
-                        if (cameraData.xr.enabled)
-                        {
-                            // SetRenderTarget might alter the internal device state(winding order).
-                            // Non-stereo buffer is already updated internally when switching render target. We update stereo buffers here to keep the consistency.
-                            bool renderIntoTexture = passColorAttachment.nameID != cameraData.xr.renderTarget;
-                            cameraData.PushBuiltinShaderConstantsXR(CommandBufferHelpers.GetRasterCommandBuffer(cmd), renderIntoTexture);
-                            XRSystemUniversal.MarkShaderProperties(CommandBufferHelpers.GetRasterCommandBuffer(cmd), cameraData.xrUniversal, renderIntoTexture);
-                        }
-#endif
                     }
                 }
             }
@@ -1879,48 +1771,12 @@ namespace UnityEngine.Rendering.Universal
 
         void BeginXRRendering(CommandBuffer cmd, ScriptableRenderContext context, ref CameraData cameraData)
         {
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (cameraData.xr.enabled)
-            {
-                if (cameraData.xrUniversal.isLateLatchEnabled)
-                    cameraData.xrUniversal.canMarkLateLatch = true;
 
-                cameraData.xr.StartSinglePass(cmd);
-
-                if (cameraData.xr.supportsFoveatedRendering)
-                {
-                    cmd.ConfigureFoveatedRendering(cameraData.xr.foveatedRenderingInfo);
-
-                    if (XRSystem.foveatedRenderingCaps.HasFlag(FoveatedRenderingCaps.NonUniformRaster))
-                        cmd.EnableShaderKeyword(ShaderKeywordStrings.FoveatedRenderingNonUniformRaster);
-                }
-
-                context.ExecuteCommandBuffer(cmd);
-                cmd.Clear();
-            }
-#endif
         }
 
         void EndXRRendering(CommandBuffer cmd, ScriptableRenderContext context, ref CameraData cameraData)
         {
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (cameraData.xr.enabled)
-            {
-                cameraData.xr.StopSinglePass(cmd);
 
-
-                if (XRSystem.foveatedRenderingCaps != FoveatedRenderingCaps.None)
-                {
-                    if (XRSystem.foveatedRenderingCaps.HasFlag(FoveatedRenderingCaps.NonUniformRaster))
-                        cmd.DisableShaderKeyword(ShaderKeywordStrings.FoveatedRenderingNonUniformRaster);
-
-                    cmd.ConfigureFoveatedRendering(IntPtr.Zero);
-                }
-
-                context.ExecuteCommandBuffer(cmd);
-                cmd.Clear();
-            }
-#endif
         }
 
         [Obsolete("Use RTHandles for colorAttachment and depthAttachment")] // TODO OBSOLETE: remove pragma warnings in ScriptableRenderer.SetRenderPassAttachments

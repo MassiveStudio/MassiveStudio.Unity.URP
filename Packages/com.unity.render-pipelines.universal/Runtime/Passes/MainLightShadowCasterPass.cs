@@ -92,6 +92,8 @@ namespace UnityEngine.Rendering.Universal.Internal
         /// <seealso cref="RenderingData"/>
         public bool Setup(ref RenderingData renderingData)
         {
+            return false;
+#if false
             if (!renderingData.shadowData.mainLightShadowsEnabled)
                 return false;
 
@@ -144,8 +146,10 @@ namespace UnityEngine.Rendering.Universal.Internal
             useNativeRenderPass = true;
 
             return true;
+#endif
         }
 
+#if false
         bool SetupForEmptyRendering(ref RenderingData renderingData)
         {
             if (!renderingData.cameraData.renderer.stripShadowsOffVariants)
@@ -157,7 +161,7 @@ namespace UnityEngine.Rendering.Universal.Internal
 
             return true;
         }
-
+#endif
         /// <inheritdoc />
         public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
         {
@@ -185,7 +189,7 @@ namespace UnityEngine.Rendering.Universal.Internal
             RenderMainLightCascadeShadowmap(CommandBufferHelpers.GetRasterCommandBuffer(renderingData.commandBuffer), ref m_PassData, ref renderingData, false);
             renderingData.commandBuffer.SetGlobalTexture(m_MainLightShadowmapID, m_MainLightShadowmapTexture.nameID);
         }
-
+#if false
         void Clear()
         {
             for (int i = 0; i < m_MainLightShadowMatrices.Length; ++i)
@@ -197,7 +201,7 @@ namespace UnityEngine.Rendering.Universal.Internal
             for (int i = 0; i < m_CascadeSlices.Length; ++i)
                 m_CascadeSlices[i].Clear();
         }
-
+#endif
         void SetEmptyMainLightCascadeShadowmap(RasterCommandBuffer cmd)
         {
             CoreUtils.SetKeyword(cmd, ShaderKeywordStrings.MainLightShadows, true);

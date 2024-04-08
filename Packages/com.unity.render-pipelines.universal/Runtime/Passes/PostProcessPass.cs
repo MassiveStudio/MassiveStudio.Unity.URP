@@ -579,7 +579,7 @@ namespace UnityEngine.Rendering.Universal
                 // Setup other effects constants
                 SetupLensDistortion(m_Materials.uber, isSceneViewCamera);
                 SetupChromaticAberration(m_Materials.uber);
-                SetupVignette(m_Materials.uber, cameraData.xr);
+                SetupVignette(m_Materials.uber, null);
                 SetupColorGrading(cmd, ref renderingData, m_Materials.uber);
 
                 // Only apply dithering & grain if there isn't a final pass.
@@ -615,10 +615,6 @@ namespace UnityEngine.Rendering.Universal
                 // Note: We rendering to "camera target" we need to get the cameraData.targetTexture as this will get the targetTexture of the camera stack.
                 // Overlay cameras need to output to the target described in the base camera while doing camera stack.
                 RenderTargetIdentifier cameraTargetID = BuiltinRenderTextureType.CameraTarget;
-#if ENABLE_VR && ENABLE_XR_MODULE
-                if (cameraData.xr.enabled)
-                    cameraTargetID = cameraData.xr.renderTarget;
-#endif
 
                 if (!m_UseSwapBuffer)
                     m_ResolveToScreen = cameraData.resolveFinalTarget || m_Destination.nameID == cameraTargetID || m_HasFinalPass == true;
@@ -1070,20 +1066,8 @@ namespace UnityEngine.Rendering.Universal
             if (motionData == null)
                 return;
 
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (xr.enabled && xr.singlePassEnabled)
-            {
-                material.SetMatrixArray(k_ShaderPropertyId_PrevViewProjMStereo, motionData.previousViewProjectionStereo);
-                material.SetMatrixArray(k_ShaderPropertyId_ViewProjMStereo, motionData.viewProjectionStereo);
-            }
-            else
-#endif
             {
                 int viewProjMIdx = 0;
-#if ENABLE_VR && ENABLE_XR_MODULE
-                if (xr.enabled)
-                    viewProjMIdx = xr.multipassId;
-#endif
 
                 // TODO: These should be part of URP main matrix set. For now, we set them here for motion vector rendering.
                 material.SetMatrix(k_ShaderPropertyId_PrevViewProjM, motionData.previousViewProjectionStereo[viewProjMIdx]);
@@ -1096,7 +1080,7 @@ namespace UnityEngine.Rendering.Universal
         {
             var material = m_Materials.cameraMotionBlur;
 
-            UpdateMotionBlurMatrices(ref material, cameraData.camera, cameraData.xr);
+            UpdateMotionBlurMatrices(ref material, cameraData.camera,null);
 
             material.SetFloat("_Intensity", m_MotionBlur.intensity.value);
             material.SetFloat("_Clamp", m_MotionBlur.clamp.value);
@@ -1348,19 +1332,6 @@ namespace UnityEngine.Rendering.Universal
             var color = m_Vignette.color.value;
             var center = m_Vignette.center.value;
             var aspectRatio = m_Descriptor.width / (float)m_Descriptor.height;
-
-
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (xrPass != null && xrPass.enabled)
-            {
-                if (xrPass.singlePassEnabled)
-                    material.SetVector(ShaderConstants._Vignette_ParamsXR, xrPass.ApplyXRViewCenterOffset(center));
-                else
-                    // In multi-pass mode we need to modify the eye center with the values from .xy of the corrected
-                    // center since the version of the shader that is not single-pass will use the value in _Vignette_Params2
-                    center = xrPass.ApplyXRViewCenterOffset(center);
-            }
-#endif
 
             var v1 = new Vector4(
                 color.r, color.g, color.b,

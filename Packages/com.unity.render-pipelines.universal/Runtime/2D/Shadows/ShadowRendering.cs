@@ -1,3 +1,4 @@
+#if true
 using System;
 using System.Collections.Generic;
 using UnityEngine.Experimental.Rendering;
@@ -43,6 +44,7 @@ namespace UnityEngine.Rendering.Universal
 
         public static uint maxTextureCount { get; private set; }
         public static RenderTargetIdentifier[] lightInputTextures { get { return m_LightInputTextures; } }
+        /*
         public static void InitializeBudget(uint maxTextureCount)
         {
             if (m_RenderTargets == null || m_RenderTargets.Length != maxTextureCount)
@@ -63,7 +65,7 @@ namespace UnityEngine.Rendering.Universal
                 m_LightInputTextures = new RenderTargetIdentifier[maxTextureCount];
             }
         }
-
+        /*
         private static Material CreateMaterial(Shader shader, int offset, int pass)
         {
             Material material;  // pairs of color channels
@@ -73,7 +75,7 @@ namespace UnityEngine.Rendering.Universal
 
             return material;
         }
-
+        
         private static Material GetProjectedShadowMaterial(this Renderer2DData rendererData)
         {
             //rendererData.projectedShadowMaterial = null;
@@ -106,7 +108,7 @@ namespace UnityEngine.Rendering.Universal
 
             return rendererData.spriteSelfShadowMaterial;
         }
-
+        
         private static Material GetSpriteUnshadowMaterial(this Renderer2DData rendererData)
         {
             //rendererData.spriteUnshadowMaterial = null;
@@ -129,7 +131,7 @@ namespace UnityEngine.Rendering.Universal
 
             return rendererData.geometrySelfShadowMaterial;
         }
-
+        
         private static Material GetGeometryUnshadowMaterial(this Renderer2DData rendererData)
         {
             //rendererData.spriteUnshadowMaterial = null;
@@ -141,14 +143,15 @@ namespace UnityEngine.Rendering.Universal
             return rendererData.geometryUnshadowMaterial;
         }
 
-
         public static void CreateShadowRenderTexture(IRenderPass2D pass, RenderingData renderingData, CommandBuffer cmdBuffer, int shadowIndex)
         {
             CreateShadowRenderTexture(pass, m_RenderTargetIds[shadowIndex], renderingData, cmdBuffer);
         }
-
+        
         public static bool PrerenderShadows(IRenderPass2D pass, RenderingData renderingData, CommandBuffer cmdBuffer, int layerToRender, Light2D light, int shadowIndex, float shadowIntensity)
         {
+            throw new System.ArgumentException("");
+
             ShadowRendering.CreateShadowRenderTexture(pass, renderingData, cmdBuffer, shadowIndex);
 
             bool hadShadowsToRender = RenderShadows(pass, renderingData, cmdBuffer, layerToRender, light, shadowIntensity, m_RenderTargets[shadowIndex].nameID);
@@ -174,12 +177,12 @@ namespace UnityEngine.Rendering.Universal
 
             cmdBuffer.GetTemporaryRT(handleId, descriptor, FilterMode.Bilinear);
         }
-
+        
         public static void ReleaseShadowRenderTexture(CommandBuffer cmdBuffer, int shadowIndex)
         {
             cmdBuffer.ReleaseTemporaryRT(m_RenderTargetIds[shadowIndex]);
         }
-
+        
         public static void SetShadowProjectionGlobals(CommandBuffer cmdBuffer, ShadowCaster2D shadowCaster, Light2D light)
         {
             cmdBuffer.SetGlobalVector(k_ShadowModelScaleID, shadowCaster.m_CachedLossyScale);
@@ -225,7 +228,6 @@ namespace UnityEngine.Rendering.Universal
 
             return renderer;
         }
-
 
         public static void RenderProjectedShadows(CommandBuffer cmdBuffer, int layerToRender, Light2D light, List<ShadowCaster2D> shadowCasters, Material projectedShadowsMaterial, int pass)
         {
@@ -320,7 +322,7 @@ namespace UnityEngine.Rendering.Universal
                 }
             }
         }
-
+        
         public static bool RenderShadows(IRenderPass2D pass, RenderingData renderingData, CommandBuffer cmdBuffer, int layerToRender, Light2D light, float shadowIntensity, RenderTargetIdentifier renderTexture)
         {
             using (new ProfilingScope(cmdBuffer, m_ProfilingSamplerShadows))
@@ -393,5 +395,7 @@ namespace UnityEngine.Rendering.Universal
                 return hasShadow;
             }
         }
+        */
     }
 }
+#endif

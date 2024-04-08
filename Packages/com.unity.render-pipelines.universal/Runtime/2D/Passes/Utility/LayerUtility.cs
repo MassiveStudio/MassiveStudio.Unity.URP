@@ -77,7 +77,7 @@ namespace UnityEngine.Rendering.Universal
                 if (light.IsLitLayer(layerId1) != light.IsLitLayer(layerId2))
                     return false;
             }
-
+            /*
             foreach (var group in lightCullResult.visibleShadows)
             {
                 foreach (var shadowCaster in group.GetShadowCasters())
@@ -86,7 +86,7 @@ namespace UnityEngine.Rendering.Universal
                     if (shadowCaster.IsShadowedLayer(layerId1) != shadowCaster.IsShadowedLayer(layerId2))
                         return false;
                 }
-            }
+            }*/
 
             return true;
         }

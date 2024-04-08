@@ -18,11 +18,7 @@ namespace UnityEngine.Rendering.Universal.Internal
         public static void SetupProperties(CommandBuffer cmd, in CameraData cameraData) { SetupProperties(CommandBufferHelpers.GetRasterCommandBuffer(cmd), cameraData); }
         internal static void SetupProperties(RasterCommandBuffer cmd, in CameraData cameraData)
         {
-#if ENABLE_VR && ENABLE_XR_MODULE
-            int eyeCount = cameraData.xr.enabled && cameraData.xr.singlePassEnabled ? 2 : 1;
-#else
             int eyeCount = 1;
-#endif
             for (int eyeIndex = 0; eyeIndex < eyeCount; eyeIndex++)
             {
                 Matrix4x4 view = cameraData.GetViewMatrix(eyeIndex);

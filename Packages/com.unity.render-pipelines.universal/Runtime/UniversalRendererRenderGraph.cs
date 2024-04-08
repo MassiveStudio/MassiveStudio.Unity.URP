@@ -279,11 +279,6 @@ namespace UnityEngine.Rendering.Universal
 
             createDepthTexture = RequireDepthTexture(ref renderingData, renderPassInputs, requiresDepthPrepass);
 
-#if ENABLE_VR && ENABLE_XR_MODULE
-            // URP can't handle msaa/size mismatch between depth RT and color RT(for now we create intermediate textures to ensure they match)
-            if (renderingData.cameraData.xr.enabled)
-                createColorTexture |= createDepthTexture;
-#endif
 #if UNITY_ANDROID || UNITY_WEBGL
             // GLES can not use render texture's depth buffer with the color buffer of the backbuffer
             // in such case we create a color texture for it too.
@@ -307,14 +302,6 @@ namespace UnityEngine.Rendering.Universal
 
             RenderTargetIdentifier targetColorId = cameraData.targetTexture != null ? new RenderTargetIdentifier(cameraData.targetTexture) : BuiltinRenderTextureType.CameraTarget;
             RenderTargetIdentifier targetDepthId = cameraData.targetTexture != null ? new RenderTargetIdentifier(cameraData.targetTexture) : BuiltinRenderTextureType.Depth;
-
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (cameraData.xr.enabled)
-            {
-                targetColorId = cameraData.xr.renderTarget;
-                targetDepthId = cameraData.xr.renderTarget;
-            }
-#endif
 
             if (m_XRTargetHandleAlias == null || m_XRTargetHandleAlias.nameID != targetColorId)
             {
@@ -590,11 +577,6 @@ namespace UnityEngine.Rendering.Universal
                 m_PostProcessPasses.colorGradingLutPass.Render(renderGraph, out internalColorLut, ref renderingData);
                 resources.SetTexture(UniversalResource.InternalColorLut, internalColorLut);
             }
-
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (cameraData.xr.hasValidOcclusionMesh)
-                m_XROcclusionMeshPass.Render(renderGraph, activeDepthTexture, ref renderingData);
-#endif
 
             if (isDeferred)
             {

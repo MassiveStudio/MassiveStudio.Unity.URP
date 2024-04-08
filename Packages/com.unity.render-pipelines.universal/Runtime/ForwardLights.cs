@@ -186,11 +186,7 @@ namespace UnityEngine.Rendering.Universal.Internal
                 var camera = cameraData.camera;
 
                 var screenResolution = math.int2(cameraData.pixelWidth, cameraData.pixelHeight);
-#if ENABLE_VR && ENABLE_XR_MODULE
-                var viewCount = cameraData.xr.enabled && cameraData.xr.singlePassEnabled ? 2 : 1;
-#else
                 var viewCount = 1;
-#endif
 
                 m_LightCount = renderingData.lightData.visibleLights.Length;
                 var lightOffset = 0;
@@ -306,7 +302,7 @@ namespace UnityEngine.Rendering.Universal.Internal
                     itemsPerTile = itemsPerTile,
                     rangesPerItem = rangesPerItem,
                     worldToViews = worldToViews,
-                    centerOffset = cameraData.xrRendering && cameraData.xr.viewCount > 0 ? 2f * cameraData.xr.ApplyXRViewCenterOffset(math.float2(0.0f, 0.0f)) : float4.zero,
+                    centerOffset = float4.zero,
                     tileScale = (float2)screenResolution / m_ActualTileWidth,
                     tileScaleInv = m_ActualTileWidth / (float2)screenResolution,
                     viewPlaneHalfSizes = new Fixed2<float2>(fovHalfHeights[0] * math.float2(cameraData.aspectRatio, 1), fovHalfHeights[1] * math.float2(cameraData.aspectRatio, 1)),

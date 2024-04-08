@@ -49,17 +49,17 @@ namespace UnityEngine.Rendering.Universal
         private static readonly int s_CameraViewProjectionsID = Shader.PropertyToID("_CameraViewProjections");
         private static readonly int s_CameraViewTopLeftCornerID = Shader.PropertyToID("_CameraViewTopLeftCorner");
 
-        private static readonly int[] m_BilateralTexturesIndices            = { 0, 1, 2, 3 };
-        private static readonly ShaderPasses[] m_BilateralPasses            = { ShaderPasses.BilateralBlurHorizontal, ShaderPasses.BilateralBlurVertical, ShaderPasses.BilateralBlurFinal };
+        private static readonly int[] m_BilateralTexturesIndices = { 0, 1, 2, 3 };
+        private static readonly ShaderPasses[] m_BilateralPasses = { ShaderPasses.BilateralBlurHorizontal, ShaderPasses.BilateralBlurVertical, ShaderPasses.BilateralBlurFinal };
         private static readonly ShaderPasses[] m_BilateralAfterOpaquePasses = { ShaderPasses.BilateralBlurHorizontal, ShaderPasses.BilateralBlurVertical, ShaderPasses.BilateralAfterOpaque };
 
-        private static readonly int[] m_GaussianTexturesIndices             = { 0, 1, 3, 3 };
-        private static readonly ShaderPasses[] m_GaussianPasses             = { ShaderPasses.GaussianBlurHorizontal, ShaderPasses.GaussianBlurVertical };
-        private static readonly ShaderPasses[] m_GaussianAfterOpaquePasses  = { ShaderPasses.GaussianBlurHorizontal, ShaderPasses.GaussianAfterOpaque };
+        private static readonly int[] m_GaussianTexturesIndices = { 0, 1, 3, 3 };
+        private static readonly ShaderPasses[] m_GaussianPasses = { ShaderPasses.GaussianBlurHorizontal, ShaderPasses.GaussianBlurVertical };
+        private static readonly ShaderPasses[] m_GaussianAfterOpaquePasses = { ShaderPasses.GaussianBlurHorizontal, ShaderPasses.GaussianAfterOpaque };
 
-        private static readonly int[] m_KawaseTexturesIndices               = { 0, 3 };
-        private static readonly ShaderPasses[] m_KawasePasses               = { ShaderPasses.KawaseBlur };
-        private static readonly ShaderPasses[] m_KawaseAfterOpaquePasses    = { ShaderPasses.KawaseAfterOpaque };
+        private static readonly int[] m_KawaseTexturesIndices = { 0, 3 };
+        private static readonly ShaderPasses[] m_KawasePasses = { ShaderPasses.KawaseBlur };
+        private static readonly ShaderPasses[] m_KawaseAfterOpaquePasses = { ShaderPasses.KawaseAfterOpaque };
 
         // Enums
         private enum BlurTypes
@@ -159,11 +159,7 @@ namespace UnityEngine.Rendering.Universal
         {
             int downsampleDivider = passData.settings.Downsample ? 2 : 1;
 
-            #if ENABLE_VR && ENABLE_XR_MODULE
-                int eyeCount = renderingData.cameraData.xr.enabled && renderingData.cameraData.xr.singlePassEnabled ? 2 : 1;
-            #else
-                int eyeCount = 1;
-            #endif
+            int eyeCount = 1;
 
             for (int eyeIndex = 0; eyeIndex < eyeCount; eyeIndex++)
             {
@@ -374,7 +370,7 @@ namespace UnityEngine.Rendering.Universal
 
             // The global SSAO texture only needs to be set if After Opaque is disabled...
             if (!m_CurrentSettings.AfterOpaque)
-                RenderGraphUtils.SetGlobalTexture(renderGraph,k_SSAOTextureName, finalTexture, "Set SSAO Texture");
+                RenderGraphUtils.SetGlobalTexture(renderGraph, k_SSAOTextureName, finalTexture, "Set SSAO Texture");
         }
 
         private void ExecuteSetupPass(RenderGraph renderGraph, FrameResources frameResources, ref RenderingData renderingData)
@@ -462,7 +458,7 @@ namespace UnityEngine.Rendering.Universal
                 passData.source = builder.UseTexture(aoTexture, IBaseRenderGraphBuilder.AccessFlags.Read);
                 passData.destination = builder.UseTextureFragment(blurTexture, 0, IBaseRenderGraphBuilder.AccessFlags.Write);
                 passData.material = m_Material;
-                passData.shaderPassID = (int) ShaderPasses.BilateralBlurHorizontal;
+                passData.shaderPassID = (int)ShaderPasses.BilateralBlurHorizontal;
 
                 // Set up the builder
                 builder.SetRenderFunc<PassData>((data, context) => RenderGraphRenderFunc(data, context));
@@ -474,7 +470,7 @@ namespace UnityEngine.Rendering.Universal
                 passData.source = builder.UseTexture(blurTexture, IBaseRenderGraphBuilder.AccessFlags.Read);
                 passData.destination = builder.UseTextureFragment(aoTexture, 0, IBaseRenderGraphBuilder.AccessFlags.Write);
                 passData.material = m_Material;
-                passData.shaderPassID = (int) ShaderPasses.BilateralBlurVertical;
+                passData.shaderPassID = (int)ShaderPasses.BilateralBlurVertical;
 
                 // Set up the builder
                 builder.SetRenderFunc<PassData>((data, context) => RenderGraphRenderFunc(data, context));
@@ -487,7 +483,7 @@ namespace UnityEngine.Rendering.Universal
                 passData.destination = builder.UseTextureFragment(finalTexture, 0, IBaseRenderGraphBuilder.AccessFlags.Write);
                 passData.material = m_Material;
                 passData.afterOpaque = m_CurrentSettings.AfterOpaque;
-                passData.shaderPassID = (int) (passData.afterOpaque ? ShaderPasses.BilateralAfterOpaque : ShaderPasses.BilateralBlurFinal);
+                passData.shaderPassID = (int)(passData.afterOpaque ? ShaderPasses.BilateralAfterOpaque : ShaderPasses.BilateralBlurFinal);
 
                 // Set up the builder
                 builder.SetRenderFunc<PassData>((data, context) => RenderGraphRenderFunc(data, context));
@@ -502,7 +498,7 @@ namespace UnityEngine.Rendering.Universal
                 passData.source = builder.UseTexture(aoTexture, IBaseRenderGraphBuilder.AccessFlags.Read);
                 passData.destination = builder.UseTextureFragment(blurTexture, 0, IBaseRenderGraphBuilder.AccessFlags.Write);
                 passData.material = m_Material;
-                passData.shaderPassID = (int) ShaderPasses.GaussianBlurHorizontal;
+                passData.shaderPassID = (int)ShaderPasses.GaussianBlurHorizontal;
 
                 // Set up the builder
                 builder.SetRenderFunc<PassData>((data, context) => RenderGraphRenderFunc(data, context));
@@ -515,7 +511,7 @@ namespace UnityEngine.Rendering.Universal
                 passData.destination = builder.UseTextureFragment(finalTexture, 0, IBaseRenderGraphBuilder.AccessFlags.Write);
                 passData.material = m_Material;
                 passData.afterOpaque = m_CurrentSettings.AfterOpaque;
-                passData.shaderPassID = (int) (passData.afterOpaque ? ShaderPasses.GaussianAfterOpaque : ShaderPasses.GaussianBlurVertical);
+                passData.shaderPassID = (int)(passData.afterOpaque ? ShaderPasses.GaussianAfterOpaque : ShaderPasses.GaussianBlurVertical);
 
                 // Set up the builder
                 builder.SetRenderFunc<PassData>((data, context) => RenderGraphRenderFunc(data, context));
@@ -531,7 +527,7 @@ namespace UnityEngine.Rendering.Universal
                 passData.destination = builder.UseTextureFragment(finalTexture, 0, IBaseRenderGraphBuilder.AccessFlags.Write);
                 passData.material = m_Material;
                 passData.afterOpaque = m_CurrentSettings.AfterOpaque;
-                passData.shaderPassID = (int) (passData.afterOpaque ? ShaderPasses.KawaseAfterOpaque : ShaderPasses.KawaseBlur);
+                passData.shaderPassID = (int)(passData.afterOpaque ? ShaderPasses.KawaseAfterOpaque : ShaderPasses.KawaseBlur);
 
                 // Set up the builder
                 builder.SetRenderFunc<PassData>((data, context) => RenderGraphRenderFunc(data, context));
@@ -607,27 +603,6 @@ namespace UnityEngine.Rendering.Universal
 
                 cmd.SetGlobalTexture(k_SSAOTextureName, m_SSAOTextures[3]);
 
-                #if ENABLE_VR && ENABLE_XR_MODULE
-                    bool isFoveatedEnabled = false;
-                    if (renderingData.cameraData.xr.supportsFoveatedRendering)
-                    {
-                        // If we are downsampling we can't use the VRS texture
-                        // If it's a non uniform raster foveated rendering has to be turned off because it will keep applying non uniform for the other passes.
-                        // When calculating normals from depth, this causes artifacts that are amplified from VRS when going to say 4x4. Thus we disable foveated because of that
-                        if (m_CurrentSettings.Downsample || SystemInfo.foveatedRenderingCaps == FoveatedRenderingCaps.NonUniformRaster ||
-                            (SystemInfo.foveatedRenderingCaps == FoveatedRenderingCaps.FoveationImage && m_CurrentSettings.Source == ScreenSpaceAmbientOcclusionSettings.DepthSource.Depth))
-                        {
-                            cmd.SetFoveatedRenderingMode(FoveatedRenderingMode.Disabled);
-                        }
-                        // If we aren't downsampling and it's a VRS texture we can apply foveation in this case
-                        else if (SystemInfo.foveatedRenderingCaps == FoveatedRenderingCaps.FoveationImage)
-                        {
-                            cmd.SetFoveatedRenderingMode(FoveatedRenderingMode.Enabled);
-                            isFoveatedEnabled = true;
-                        }
-                    }
-                #endif
-
                 GetPassOrder(m_BlurType, m_CurrentSettings.AfterOpaque, out int[] textureIndices, out ShaderPasses[] shaderPasses);
 
                 // Execute the SSAO
@@ -644,11 +619,6 @@ namespace UnityEngine.Rendering.Universal
 
                 // Set the global SSAO Params
                 cmd.SetGlobalVector(k_SSAOAmbientOcclusionParamName, new Vector4(0f, 0f, 0f, m_CurrentSettings.DirectLightingStrength));
-                #if ENABLE_VR && ENABLE_XR_MODULE
-                    // Cleanup, making sure it doesn't stay enabled for a pass after that should not have it on
-                    if (isFoveatedEnabled)
-                        cmd.SetFoveatedRenderingMode(FoveatedRenderingMode.Disabled);
-                #endif
             }
         }
 

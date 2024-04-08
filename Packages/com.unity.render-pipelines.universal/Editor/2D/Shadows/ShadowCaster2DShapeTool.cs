@@ -1,3 +1,4 @@
+#if false
 using UnityEditor.Rendering.Universal.Path2D;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
@@ -35,3 +36,4 @@ namespace UnityEditor.Rendering.Universal
         }
     }
 }
+#endif

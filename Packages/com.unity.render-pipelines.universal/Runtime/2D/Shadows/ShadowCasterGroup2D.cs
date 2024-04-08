@@ -1,3 +1,4 @@
+#if true
 using System.Collections.Generic;
 using UnityEngine.Scripting.APIUpdating;
 
@@ -71,3 +72,4 @@ namespace UnityEngine.Rendering.Universal
         }
     }
 }
+#endif

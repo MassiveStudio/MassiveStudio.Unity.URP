@@ -273,9 +273,6 @@ namespace UnityEngine.Rendering.Universal
 
             if (warning == null && cameraData.cameraTargetDescriptor.msaaSamples != 1)
             {
-                if (cameraData.xr != null && cameraData.xr.enabled)
-                    warning = "Disabling TAA because MSAA is on. MSAA must be disabled globally for all cameras in XR mode.";
-                else
                     warning = "Disabling TAA because MSAA is on.";
             }
 
@@ -306,9 +303,6 @@ namespace UnityEngine.Rendering.Universal
             using (new ProfilingScope(cmd, ProfilingSampler.Get(URPProfileId.TemporalAA)))
             {
                 int multipassId = 0;
-#if ENABLE_VR && ENABLE_XR_MODULE
-                multipassId = cameraData.xr.multipassId;
-#endif
 
                 bool isNewFrame = cameraData.taaPersistentData.GetLastAccumFrameIndex(multipassId) != Time.frameCount;
 
@@ -381,9 +375,6 @@ namespace UnityEngine.Rendering.Universal
         internal static void Render(RenderGraph renderGraph, Material taaMaterial, ref CameraData cameraData, ref TextureHandle srcColor, ref TextureHandle srcDepth, ref TextureHandle srcMotionVectors, ref TextureHandle dstColor)
         {
             int multipassId = 0;
-#if ENABLE_VR && ENABLE_XR_MODULE
-            multipassId = cameraData.xr.multipassId;
-#endif
 
             ref var taa = ref cameraData.taaSettings;
 

@@ -66,11 +66,7 @@ namespace UnityEngine.Rendering.Universal
 
         internal int GetXRMultiPassId(ref CameraData cameraData)
         {
-#if ENABLE_VR && ENABLE_XR_MODULE
-            return cameraData.xr.enabled ? cameraData.xr.multipassId : 0;
-#else
             return 0;
-#endif
         }
 
         public void Update(ref CameraData cameraData)
@@ -82,18 +78,6 @@ namespace UnityEngine.Rendering.Universal
             bool aspectChanged = m_PrevAspectRatio[idx] != cameraData.aspectRatio;
             if (m_LastFrameIndex[idx] != Time.frameCount || aspectChanged)
             {
-#if ENABLE_VR && ENABLE_XR_MODULE
-                if (cameraData.xr.enabled && cameraData.xr.singlePassEnabled)
-                {
-                    var gpuVP0 = GL.GetGPUProjectionMatrix(cameraData.GetProjectionMatrixNoJitter(0), true) * cameraData.GetViewMatrix(0);
-                    var gpuVP1 = GL.GetGPUProjectionMatrix(cameraData.GetProjectionMatrixNoJitter(1), true) * cameraData.GetViewMatrix(1);
-                    m_PreviousViewProjection[0] = aspectChanged ? gpuVP0 : m_ViewProjection[0];
-                    m_PreviousViewProjection[1] = aspectChanged ? gpuVP1 : m_ViewProjection[1];
-                    m_ViewProjection[0] = gpuVP0;
-                    m_ViewProjection[1] = gpuVP1;
-                }
-                else
-#endif
                 {
                     var gpuVP = GL.GetGPUProjectionMatrix(cameraData.GetProjectionMatrixNoJitter(0), true) * cameraData.GetViewMatrix(0);
                     m_PreviousViewProjection[idx] = aspectChanged ? gpuVP : m_ViewProjection[idx];

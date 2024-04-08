@@ -161,11 +161,6 @@ namespace UnityEngine.Experimental.Rendering.Universal
             {
                 if (passData.cameraSettings.overrideCamera)
                 {
-                    if (cameraData.xr.enabled)
-                    {
-                        Debug.LogWarning("RenderObjects pass is configured to override camera matrices. While rendering in stereo camera matrices cannot be overridden.");
-                    }
-                    else
                     {
                         Matrix4x4 projectionMatrix = Matrix4x4.Perspective(passData.cameraSettings.cameraFieldOfView, cameraAspect,
                             camera.nearClipPlane, camera.farClipPlane);
@@ -189,7 +184,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
                     cmd.DrawRendererList(rendererList);
                 }
 
-                if (passData.cameraSettings.overrideCamera && passData.cameraSettings.restoreCamera && !cameraData.xr.enabled)
+                if (passData.cameraSettings.overrideCamera && passData.cameraSettings.restoreCamera)
                 {
                     RenderingUtils.SetViewAndProjectionMatrices(cmd, cameraData.GetViewMatrix(), GL.GetGPUProjectionMatrix(cameraData.GetProjectionMatrix(0), isYFlipped), false);
                 }

@@ -224,26 +224,7 @@ namespace UnityEngine.Rendering.Universal
         // Helper function to populate builtin stereo matricies as well as URP stereo matricies
         internal void PushBuiltinShaderConstantsXR(RasterCommandBuffer cmd, bool renderIntoTexture)
         {
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (xr.enabled)
-            {
-                cmd.SetViewProjectionMatrices(GetViewMatrix(), GetProjectionMatrix());
-                if (xr.singlePassEnabled)
-                {
-                    for (int viewId = 0; viewId < xr.viewCount; viewId++)
-                    {
-                        XRBuiltinShaderConstants.UpdateBuiltinShaderConstants(GetViewMatrix(viewId), GetProjectionMatrix(viewId), renderIntoTexture, viewId);
-                    }
-                    XRBuiltinShaderConstants.SetBuiltinShaderConstants(cmd);
-                }
-                else
-                {
-                    // Update multipass worldSpace camera pos
-                    Vector3 worldSpaceCameraPos = Matrix4x4.Inverse(GetViewMatrix(0)).GetColumn(3);
-                    cmd.SetGlobalVector(ShaderPropertyId.worldSpaceCameraPos, worldSpaceCameraPos);
-                }
-            }
-#endif
+
         }
 
         /// <summary>
@@ -253,10 +234,6 @@ namespace UnityEngine.Rendering.Universal
         /// <returns> The camera view matrix. </returns>
         public Matrix4x4 GetViewMatrix(int viewIndex = 0)
         {
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (xr.enabled)
-                return xr.GetViewMatrix(viewIndex);
-#endif
             return m_ViewMatrix;
         }
 
@@ -267,19 +244,11 @@ namespace UnityEngine.Rendering.Universal
         /// <returns> The camera projection matrix. </returns>
         public Matrix4x4 GetProjectionMatrix(int viewIndex = 0)
         {
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (xr.enabled)
-                return m_JitterMatrix * xr.GetProjMatrix(viewIndex);
-#endif
             return m_JitterMatrix * m_ProjectionMatrix;
         }
 
         internal Matrix4x4 GetProjectionMatrixNoJitter(int viewIndex = 0)
         {
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (xr.enabled)
-                return xr.GetProjMatrix(viewIndex);
-#endif
             return m_ProjectionMatrix;
         }
 
@@ -405,12 +374,6 @@ namespace UnityEngine.Rendering.Universal
         {
             get
             {
-#if ENABLE_VR && ENABLE_XR_MODULE
-                // For some XR platforms we need to encode in SRGB but can't use a _SRGB format texture, only required for 8bit per channel 32 bit formats.
-                if (xr.enabled)
-                    return !xr.renderTargetDesc.sRGB && (xr.renderTargetDesc.graphicsFormat == GraphicsFormat.R8G8B8A8_UNorm || xr.renderTargetDesc.graphicsFormat == GraphicsFormat.B8G8R8A8_UNorm) && (QualitySettings.activeColorSpace == ColorSpace.Linear);
-#endif
-
                 return targetTexture == null && Display.main.requiresSrgbBlitToBackbuffer;
             }
         }
@@ -437,11 +400,6 @@ namespace UnityEngine.Rendering.Universal
             get
             {
                 bool hdrDisplayOutputActive = UniversalRenderPipeline.HDROutputForMainDisplayIsActive();
-#if ENABLE_VR && ENABLE_XR_MODULE
-                // If we are rendering to xr then we need to look at the XR Display rather than the main non-xr display.
-                if (xr.enabled)
-                    hdrDisplayOutputActive = xr.isHDRDisplayOutputActive;
-#endif
         		return hdrDisplayOutputActive && allowHDROutput && resolveToScreen;
             }
         }
@@ -454,14 +412,6 @@ namespace UnityEngine.Rendering.Universal
             get
             {
                 HDROutputUtils.HDRDisplayInformation displayInformation;
-#if ENABLE_VR && ENABLE_XR_MODULE
-                // If we are rendering to xr then we need to look at the XR Display rather than the main non-xr display.
-                if (xr.enabled)
-                {
-                    displayInformation = xr.hdrDisplayOutputInformation;
-                }
-                else
-#endif
                 {
                     HDROutputSettings displaySettings = HDROutputSettings.main;
                     displayInformation = new HDROutputUtils.HDRDisplayInformation(displaySettings.maxFullFrameToneMapLuminance,
@@ -481,14 +431,6 @@ namespace UnityEngine.Rendering.Universal
         {
             get
             {
-#if ENABLE_VR && ENABLE_XR_MODULE
-                // If we are rendering to xr then we need to look at the XR Display rather than the main non-xr display.
-                if (xr.enabled)
-                {
-                    return xr.hdrDisplayOutputColorGamut;
-                }
-                else
-#endif
                 {
                     HDROutputSettings displaySettings = HDROutputSettings.main;
                     return displaySettings.displayColorGamut;
@@ -522,10 +464,6 @@ namespace UnityEngine.Rendering.Universal
 
             var handleID = new RenderTargetIdentifier(handle.nameID, 0, CubemapFace.Unknown, 0);
             bool isBackbuffer = handleID == BuiltinRenderTextureType.CameraTarget;
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (xr.enabled)
-                isBackbuffer |= handleID == new RenderTargetIdentifier(xr.renderTarget, 0, CubemapFace.Unknown, 0);
-#endif
             return !isBackbuffer;
         }
 
@@ -561,10 +499,6 @@ namespace UnityEngine.Rendering.Universal
                     {
                         var handleID = new RenderTargetIdentifier(renderer.cameraColorTarget, 0, CubemapFace.Unknown, 0);
                         bool isBackbuffer = handleID == BuiltinRenderTextureType.CameraTarget;
-#if ENABLE_VR && ENABLE_XR_MODULE
-                        if (xr.enabled)
-                            isBackbuffer |= handleID == new RenderTargetIdentifier(xr.renderTarget, 0, CubemapFace.Unknown, 0);
-#endif
                         flipped = !isBackbuffer;
                     }
                 }
@@ -615,14 +549,6 @@ namespace UnityEngine.Rendering.Universal
         /// </summary>
         /// <seealso cref="SortingCriteria"/>
         public SortingCriteria defaultOpaqueSortFlags;
-
-        /// <summary>
-        /// XRPass holds the render target information and a list of XRView.
-        /// XRView contains the parameters required to render (projection and view matrices, viewport, etc)
-        /// </summary>
-        public XRPass xr { get; internal set; }
-
-        internal XRPassUniversal xrUniversal => xr as XRPassUniversal;
 
         /// <summary>
         /// Maximum shadow distance visible to the camera. When set to zero shadows will be disable for that camera.

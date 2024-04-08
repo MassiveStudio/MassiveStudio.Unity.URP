@@ -48,17 +48,7 @@ namespace UnityEngine.Rendering.Universal
         private static void ExecutePass(RasterCommandBuffer cmd, RendererList rendererList, ref RenderingData renderingData)
         {
             ref CameraData cameraData = ref renderingData.cameraData;
-
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (cameraData.xr.enabled && cameraData.xr.singlePassEnabled)
-                cmd.SetSinglePassStereo(SystemInfo.supportsMultiview ? SinglePassStereoMode.Multiview : SinglePassStereoMode.Instancing);
-#endif
             cmd.DrawRendererList(rendererList);
-
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (cameraData.xr.enabled && cameraData.xr.singlePassEnabled)
-                cmd.SetSinglePassStereo(SinglePassStereoMode.None);
-#endif
         }
 
         private class PassData
@@ -76,23 +66,6 @@ namespace UnityEngine.Rendering.Universal
         private void InitSkyboxRendererList(ScriptableRenderContext context, ref RenderingData renderingData)
         {
             ref CameraData cameraData = ref renderingData.cameraData;
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (cameraData.xr.enabled)
-            {
-                // Setup Legacy XR buffer states
-                if (cameraData.xr.singlePassEnabled)
-                {
-                    m_SkyRendererList = context.CreateSkyboxRendererList(cameraData.camera,
-                        cameraData.GetProjectionMatrix(0), cameraData.GetViewMatrix(0),
-                        cameraData.GetProjectionMatrix(1), cameraData.GetViewMatrix(1));
-                }
-                else
-                {
-                    m_SkyRendererList = context.CreateSkyboxRendererList(cameraData.camera, cameraData.GetProjectionMatrix(0), cameraData.GetViewMatrix(0));
-                }
-            }
-            else
-#endif
             {
                 m_SkyRendererList = context.CreateSkyboxRendererList(cameraData.camera);
             }

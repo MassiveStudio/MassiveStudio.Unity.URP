@@ -972,7 +972,6 @@ namespace UnityEngine.Rendering.Universal
                 passData.material = material;
                 passData.passIndex = (int)m_MotionBlur.quality.value;
                 passData.camera = cameraData.camera;
-                passData.xr = cameraData.xr;
                 passData.intensity = m_MotionBlur.intensity.value;
                 passData.clamp = m_MotionBlur.clamp.value;
                 builder.SetRenderFunc((MotionBlurPassData data, RasterGraphContext context) =>
@@ -1225,10 +1224,7 @@ namespace UnityEngine.Rendering.Universal
             var yflip = cameraData.IsRenderTargetProjectionMatrixFlipped(dest);
             Vector4 scaleBias = !yflip ? new Vector4(viewportScale.x, -viewportScale.y, 0, viewportScale.y) : new Vector4(viewportScale.x, viewportScale.y, 0, 0);
             RenderTargetIdentifier cameraTarget = BuiltinRenderTextureType.CameraTarget;
-        #if ENABLE_VR && ENABLE_XR_MODULE
-            if (cameraData.xr.enabled)
-                cameraTarget = cameraData.xr.renderTarget;
-        #endif
+
             if (dest.nameID == cameraTarget || cameraData.targetTexture != null)
                 cmd.SetViewport(cameraData.pixelRect);
 
@@ -1374,10 +1370,6 @@ namespace UnityEngine.Rendering.Universal
                     }
 
                     bool isRenderToBackBufferTarget = !cameraData.isSceneViewCamera;
-#if ENABLE_VR && ENABLE_XR_MODULE
-                    if (cameraData.xr.enabled)
-                        isRenderToBackBufferTarget = destinationTextureHdl == cameraData.xr.renderTarget;
-#endif
                     Vector2 viewportScale = sourceTextureHdl.useScaling ? new Vector2(sourceTextureHdl.rtHandleProperties.rtHandleScale.x, sourceTextureHdl.rtHandleProperties.rtHandleScale.y) : Vector2.one;
 
                     // We y-flip if
@@ -1737,7 +1729,7 @@ namespace UnityEngine.Rendering.Universal
                 // the same timeline of executing the rendergraph. Keep them here for now so we cound reuse non-RG code to reduce maintainance cost.
                 SetupLensDistortion(m_Materials.uber, isSceneViewCamera);
                 SetupChromaticAberration(m_Materials.uber);
-                SetupVignette(m_Materials.uber, cameraData.xr);
+                SetupVignette(m_Materials.uber, null);
                 SetupGrain(ref cameraData, m_Materials.uber);
                 SetupDithering(ref cameraData, m_Materials.uber);
 

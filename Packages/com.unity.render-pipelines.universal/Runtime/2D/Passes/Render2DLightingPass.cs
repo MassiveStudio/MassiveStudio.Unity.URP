@@ -88,7 +88,7 @@ namespace UnityEngine.Rendering.Universal
 
             return short.MinValue;
         }
-
+        /*
         private void DetermineWhenToResolve(int startIndex, int batchesDrawn, int batchCount, LayerBatch[] layerBatches,
             out int resolveDuringBatch, out bool resolveIsAfterCopy)
         {
@@ -137,7 +137,7 @@ namespace UnityEngine.Rendering.Universal
                 resolveIsAfterCopy = false;
             }
         }
-
+        */
         private void Render(ScriptableRenderContext context, CommandBuffer cmd, ref RenderingData renderingData, ref FilteringSettings filterSettings, DrawingSettings drawSettings)
         {
             var activeDebugHandler = GetActiveDebugHandler(ref renderingData);
@@ -154,7 +154,7 @@ namespace UnityEngine.Rendering.Universal
                 cmd.DrawRendererList(rl);
             }
         }
-
+        /*
         private int DrawLayerBatches(
             LayerBatch[] layerBatches,
             int batchCount,
@@ -203,7 +203,7 @@ namespace UnityEngine.Rendering.Universal
 
                     using (new ProfilingScope(cmd, m_ProfilingDrawLightTextures))
                     {
-                        this.RenderLights(renderingData, cmd, layerBatch.startLayerID, ref layerBatch, ref desc);
+                        //this.RenderLights(renderingData, cmd, layerBatch.startLayerID, ref layerBatch, ref desc);
                     }
                 }
             }
@@ -320,7 +320,7 @@ namespace UnityEngine.Rendering.Universal
 
             return batchesDrawn;
         }
-
+        
         void CalculateFrustumCornersPerspective(Camera camera, float distance, NativeArray<Vector3> corners)
         {
             float verticalFieldOfView = camera.fieldOfView;  // This will need to be converted if user direction is allowed
@@ -394,7 +394,7 @@ namespace UnityEngine.Rendering.Universal
 
             return new Bounds(center, size);;
         }
-
+        /*
         private void CallOnBeforeRender(Camera camera, ILight2DCullResult cullResult)
         {
             if (ShadowCasterGroup2DManager.shadowCasterGroups != null)
@@ -420,7 +420,7 @@ namespace UnityEngine.Rendering.Universal
                     }
                 }
             }
-        }
+        }*/
 
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
@@ -441,9 +441,9 @@ namespace UnityEngine.Rendering.Universal
             filterSettings.sortingLayerRange = SortingLayerRange.all;
 
             LayerUtility.InitializeBudget(m_Renderer2DData.lightRenderTextureMemoryBudget);
-            ShadowRendering.InitializeBudget(m_Renderer2DData.shadowRenderTextureMemoryBudget);
+            //ShadowRendering.InitializeBudget(m_Renderer2DData.shadowRenderTextureMemoryBudget);
             RendererLighting.lightBatch.Reset();
-
+            /*
             var isSceneLit = m_Renderer2DData.lightCullResult.IsSceneLit();
             if (isSceneLit)
             {
@@ -469,14 +469,14 @@ namespace UnityEngine.Rendering.Universal
                 var layerBatches = LayerUtility.CalculateBatches(m_Renderer2DData.lightCullResult, out var batchCount);
                 var batchesDrawn = 0;
 
-                for (var i = 0; i < batchCount; i += batchesDrawn)
-                    batchesDrawn = DrawLayerBatches(layerBatches, batchCount, i, cmd, context, ref renderingData, ref filterSettings, ref normalsDrawSettings, ref combinedDrawSettings, ref desc);
+                //for (var i = 0; i < batchCount; i += batchesDrawn)
+                //    batchesDrawn = DrawLayerBatches(layerBatches, batchCount, i, cmd, context, ref renderingData, ref filterSettings, ref normalsDrawSettings, ref combinedDrawSettings, ref desc);
 
                 RendererLighting.DisableAllKeywords(cmd);
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
             }
-            else
+            else*/
             {
                 var unlitDrawSettings = CreateDrawingSettings(k_ShaderTags, ref renderingData, SortingCriteria.CommonTransparent);
                 var msaaEnabled = renderingData.cameraData.cameraTargetDescriptor.msaaSamples > 1;
@@ -502,7 +502,7 @@ namespace UnityEngine.Rendering.Universal
                         if (blendStyleIndex == 0)
                             cmd.SetGlobalTexture(k_ShapeLightTextureIDs[blendStyleIndex], Texture2D.blackTexture);
 
-                        RendererLighting.EnableBlendStyle(cmd, blendStyleIndex, blendStyleIndex == 0);
+                        //RendererLighting.EnableBlendStyle(cmd, blendStyleIndex, blendStyleIndex == 0);
                     }
                 }
 

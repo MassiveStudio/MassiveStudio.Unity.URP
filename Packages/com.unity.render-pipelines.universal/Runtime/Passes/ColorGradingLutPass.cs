@@ -239,16 +239,13 @@ namespace UnityEngine.Rendering.Universal.Internal
                     }
                 }
 
-                cameraData.xr.StopSinglePass(cmd);
+                //cameraData.xr.StopSinglePass(cmd);
 
-
-                if (cameraData.xr.supportsFoveatedRendering)
-                    cmd.SetFoveatedRenderingMode(FoveatedRenderingMode.Disabled);
 
                 // Render the lut.
                 Blitter.BlitTexture(cmd, internalLutTarget, Vector2.one, material, 0);
 
-                cameraData.xr.StartSinglePass(cmd);
+                //cameraData.xr.StartSinglePass(cmd);
             }
         }
 

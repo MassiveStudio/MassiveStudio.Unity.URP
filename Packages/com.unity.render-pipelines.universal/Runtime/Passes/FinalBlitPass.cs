@@ -190,10 +190,6 @@ namespace UnityEngine.Rendering.Universal.Internal
                     var loadAction = RenderBufferLoadAction.DontCare;
                     if (!cameraData.isSceneViewCamera && !cameraData.isDefaultViewport)
                         loadAction = RenderBufferLoadAction.Load;
-#if ENABLE_VR && ENABLE_XR_MODULE
-                    if (cameraData.xr.enabled)
-                        loadAction = RenderBufferLoadAction.Load;
-#endif
 
                     CoreUtils.SetRenderTarget(renderingData.commandBuffer, m_CameraTargetHandle, loadAction, RenderBufferStoreAction.Store, ClearFlag.None, Color.clear);
                     FinalBlitPass.ExecutePass(CommandBufferHelpers.GetRasterCommandBuffer(renderingData.commandBuffer), m_PassData, m_Source, m_CameraTargetHandle, ref renderingData);
@@ -207,10 +203,6 @@ namespace UnityEngine.Rendering.Universal.Internal
         {
             ref var cameraData = ref renderingData.cameraData;
             bool isRenderToBackBufferTarget = !cameraData.isSceneViewCamera;
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (cameraData.xr.enabled)
-                isRenderToBackBufferTarget = new RenderTargetIdentifier(destination.nameID, 0, CubemapFace.Unknown, -1) == new RenderTargetIdentifier(cameraData.xr.renderTarget, 0, CubemapFace.Unknown, -1);
-#endif
             Vector2 viewportScale = source.useScaling ? new Vector2(source.rtHandleProperties.rtHandleScale.x, source.rtHandleProperties.rtHandleScale.y) : Vector2.one;
 
             // We y-flip if

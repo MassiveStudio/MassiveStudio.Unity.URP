@@ -94,15 +94,6 @@ namespace UnityEngine.Rendering.Universal
             using (new ProfilingScope(cmd, ProfilingSampler.Get(URPProfileId.MotionVectors)))
             {
                 int passID = motionData.GetXRMultiPassId(ref cameraData);
-
-#if ENABLE_VR && ENABLE_XR_MODULE
-                if (cameraData.xr.enabled && cameraData.xr.singlePassEnabled)
-                {
-                    cmd.SetGlobalMatrixArray(k_PreviousViewProjectionNoJitterStereo, motionData.previousViewProjectionStereo);
-                    cmd.SetGlobalMatrixArray(k_ViewProjectionNoJitterStereo, motionData.viewProjectionStereo);
-                }
-                else
-#endif
                 {
                     // TODO: These should be part of URP main matrix set. For now, we set them here for motion vector rendering.
                     cmd.SetGlobalMatrix(k_PreviousViewProjectionNoJitter, motionData.previousViewProjectionStereo[passID]);
@@ -152,41 +143,13 @@ namespace UnityEngine.Rendering.Universal
         // NOTE: depends on camera depth to reconstruct static geometry positions
         private static void DrawCameraMotionVectors(RasterCommandBuffer cmd, ref RenderingData renderingData, Material cameraMaterial)
         {
-#if ENABLE_VR && ENABLE_XR_MODULE
-            bool foveatedRendering = renderingData.cameraData.xr.supportsFoveatedRendering;
-            bool nonUniformFoveatedRendering = foveatedRendering && XRSystem.foveatedRenderingCaps.HasFlag(FoveatedRenderingCaps.NonUniformRaster);
-            if (foveatedRendering)
-            {
-                if (nonUniformFoveatedRendering)
-                    // This is a screen-space pass, make sure foveated rendering is disabled for non-uniform renders
-                    cmd.SetFoveatedRenderingMode(FoveatedRenderingMode.Disabled);
-                else
-                    cmd.SetFoveatedRenderingMode(FoveatedRenderingMode.Enabled);
-            }
-#endif
             // Draw fullscreen quad
             cmd.DrawProcedural(Matrix4x4.identity, cameraMaterial, 0, MeshTopology.Triangles, 3, 1);
-
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (foveatedRendering && !nonUniformFoveatedRendering)
-                cmd.SetFoveatedRenderingMode(FoveatedRenderingMode.Disabled);
-#endif
         }
 
         private static void DrawObjectMotionVectors(RasterCommandBuffer cmd, ref RenderingData renderingData, ref RendererList rendererList)
         {
-#if ENABLE_VR && ENABLE_XR_MODULE
-            bool foveatedRendering = renderingData.cameraData.xr.supportsFoveatedRendering;
-            if (foveatedRendering)
-                // This is a geometry pass, enable foveated rendering (we need to disable it after)
-                cmd.SetFoveatedRenderingMode(FoveatedRenderingMode.Enabled);
-#endif
             cmd.DrawRendererList(rendererList);
-
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (foveatedRendering)
-                cmd.SetFoveatedRenderingMode(FoveatedRenderingMode.Disabled);
-#endif
         }
         #endregion
 

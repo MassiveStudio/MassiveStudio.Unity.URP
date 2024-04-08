@@ -572,20 +572,7 @@ namespace UnityEngine.Rendering.Universal
         }
 
         static bool TryGetCullingParameters(ref CameraData cameraData, out ScriptableCullingParameters cullingParams)
-        {
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (cameraData.xr.enabled)
-            {
-                cullingParams = cameraData.xr.cullingParams;
-
-                // Sync the FOV on the camera to match the projection from the XR device
-                if (!cameraData.camera.usePhysicalProperties && !XRGraphicsAutomatedTests.enabled)
-                    cameraData.camera.fieldOfView = Mathf.Rad2Deg * Mathf.Atan(1.0f / cullingParams.stereoProjectionMatrix.m11) * 2.0f;
-
-                return true;
-            }
-#endif
-
+        { 
             return cameraData.camera.TryGetCullingParameters(false, out cullingParams);
         }
 
@@ -621,7 +608,7 @@ namespace UnityEngine.Rendering.Universal
 
             // TODO: move skybox code from C++ to URP in order to remove the call to context.Submit() inside DrawSkyboxPass
             // Until then, we can't use nested profiling scopes with XR multipass
-            CommandBuffer cmdScope = cameraData.xr.enabled ? null : cmd;
+            CommandBuffer cmdScope = cmd;
 
             ProfilingSampler sampler = Profiling.TryGetOrAddCameraSampler(camera);
             using (new ProfilingScope(cmdScope, sampler)) // Enqueues a "BeginSample" command into the CommandBuffer cmd
@@ -844,20 +831,6 @@ namespace UnityEngine.Rendering.Universal
                 InitializeCameraData(baseCamera, baseCameraAdditionalData, !isStackedRendering, out var baseCameraData);
                 RenderTextureDescriptor originalTargetDesc = baseCameraData.cameraTargetDescriptor;
 
-#if ENABLE_VR && ENABLE_XR_MODULE
-                if (xrPass.enabled)
-                {
-                    baseCameraData.xr = xrPass;
-
-                    // Helper function for updating cameraData with xrPass Data
-                    // Need to update XRSystem using baseCameraData to handle the case where camera position is modified in BeginCameraRendering
-                    UpdateCameraData(ref baseCameraData, baseCameraData.xr);
-
-                    // Handle the case where camera position is modified in BeginCameraRendering
-                    xrLayout.ReconfigurePass(baseCameraData.xr, baseCamera);
-                    XRSystemUniversal.BeginLateLatching(baseCamera, baseCameraData.xrUniversal);
-                }
-#endif
                 // InitializeAdditionalCameraData needs to be initialized after the cameraTargetDescriptor is set because it needs to know the
                 // msaa level of cameraTargetDescriptor and XR modifications.
                 InitializeAdditionalCameraData(baseCamera, baseCameraAdditionalData, !isStackedRendering, ref baseCameraData);
@@ -878,10 +851,6 @@ namespace UnityEngine.Rendering.Universal
                 {
                     EndCameraRendering(context, baseCamera);
                 }
-
-                // Late latching is not supported after this point
-                if (baseCameraData.xr.enabled)
-                    XRSystemUniversal.EndLateLatching(baseCamera, baseCameraData.xrUniversal);
 
                 if (isStackedRendering)
                 {
@@ -915,8 +884,6 @@ namespace UnityEngine.Rendering.Universal
                             bool lastCamera = i == lastActiveOverlayCameraIndex;
                             InitializeAdditionalCameraData(currCamera, currAdditionalCameraData, lastCamera, ref overlayCameraData);
 
-                            xrLayout.ReconfigurePass(overlayCameraData.xr, currCamera);
-
                             RenderSingleCamera(context, ref overlayCameraData, anyPostProcessingEnabled);
 
                             using (new ProfilingScope(Profiling.Pipeline.endCameraRendering))
@@ -926,9 +893,6 @@ namespace UnityEngine.Rendering.Universal
                         }
                     }
                 }
-
-                if (baseCameraData.xr.enabled)
-                    baseCameraData.cameraTargetDescriptor = originalTargetDesc;
             }
 
             if (xrActive)
@@ -1198,9 +1162,6 @@ namespace UnityEngine.Rendering.Universal
 
             cameraData.fsrOverrideSharpness = settings.fsrOverrideSharpness;
             cameraData.fsrSharpness = settings.fsrSharpness;
-
-            cameraData.xr = XRSystem.emptyPass;
-            XRSystem.SetRenderScale(cameraData.renderScale);
 
             var commonOpaqueFlags = SortingCriteria.CommonOpaque;
             var noFrontToBackOpaqueFlags = SortingCriteria.SortingLayer | SortingCriteria.RenderQueue | SortingCriteria.OptimizeStateChanges | SortingCriteria.CanvasOrder;
@@ -1562,9 +1523,6 @@ namespace UnityEngine.Rendering.Universal
             if (cameraData.IsTemporalAAEnabled())
             {
                 bool xrMultipassEnabled = false;
-#if ENABLE_VR && ENABLE_XR_MODULE
-                xrMultipassEnabled = cameraData.xr.enabled && !cameraData.xr.singlePassEnabled;
-#endif
                 bool allocation = cameraData.taaPersistentData.AllocateTargets(xrMultipassEnabled);
 
                 // Fill new history with current frame
@@ -1578,24 +1536,6 @@ namespace UnityEngine.Rendering.Universal
 
         static void UpdateCameraStereoMatrices(Camera camera, XRPass xr)
         {
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (xr.enabled)
-            {
-                if (xr.singlePassEnabled)
-                {
-                    for (int i = 0; i < Mathf.Min(2, xr.viewCount); i++)
-                    {
-                        camera.SetStereoProjectionMatrix((Camera.StereoscopicEye)i, xr.GetProjMatrix(i));
-                        camera.SetStereoViewMatrix((Camera.StereoscopicEye)i, xr.GetViewMatrix(i));
-                    }
-                }
-                else
-                {
-                    camera.SetStereoProjectionMatrix((Camera.StereoscopicEye)xr.multipassId, xr.GetProjMatrix(0));
-                    camera.SetStereoViewMatrix((Camera.StereoscopicEye)xr.multipassId, xr.GetViewMatrix(0));
-                }
-            }
-#endif
         }
 
         static PerObjectData GetPerObjectLightFlags(int additionalLightsCount, bool isForwardPlus)

@@ -103,14 +103,6 @@ namespace UnityEngine.Rendering.Universal
         /// </summary>
         public PostProcessData postProcessData;
 
-#if ENABLE_VR && ENABLE_XR_MODULE
-        /// <summary>
-        /// Shader resources needed in URP for XR.
-        /// </summary>
-        [Reload("Runtime/Data/XRSystemData.asset")]
-        public XRSystemData xrSystemData;
-#endif
-
         [SerializeField] LayerMask m_OpaqueLayerMask;
         [SerializeField] LayerMask m_TransparentLayerMask;
         [SerializeField] StencilStateData m_DefaultStencilState; // This default state is compatible with deferred renderer.

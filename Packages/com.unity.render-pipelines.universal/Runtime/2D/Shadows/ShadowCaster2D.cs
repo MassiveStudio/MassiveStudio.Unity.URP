@@ -1,3 +1,4 @@
+#if true
 using System;
 using UnityEngine;
 using UnityEngine.Scripting.APIUpdating;
@@ -622,3 +623,4 @@ namespace UnityEngine.Rendering.Universal
         }
     }
 }
+#endif

@@ -170,15 +170,6 @@ namespace UnityEngine.Rendering.Universal.Internal
                 // 1) we are blitting from render texture to back buffer(UV starts at bottom) and
                 // 2) renderTexture starts UV at top
                 bool isGameViewFinalTarget = cameraData.cameraType == CameraType.Game && destination.nameID == BuiltinRenderTextureType.CameraTarget;
-#if ENABLE_VR && ENABLE_XR_MODULE
-                if (cameraData.xr.enabled)
-                {
-                    if (cameraData.xr.supportsFoveatedRendering)
-                        cmd.SetFoveatedRenderingMode(FoveatedRenderingMode.Disabled);
-
-                    isGameViewFinalTarget |= new RenderTargetIdentifier(destination.nameID, 0, CubemapFace.Unknown, 0) == new RenderTargetIdentifier(cameraData.xr.renderTarget, 0, CubemapFace.Unknown, 0);
-                }
-#endif
                 bool yflip = cameraData.IsHandleYFlipped(source) != cameraData.IsHandleYFlipped(destination);
                 Vector4 scaleBias = yflip ? new Vector4(viewportScale.x, -viewportScale.y, 0, viewportScale.y) : new Vector4(viewportScale.x, viewportScale.y, 0, 0);
                 if (isGameViewFinalTarget)

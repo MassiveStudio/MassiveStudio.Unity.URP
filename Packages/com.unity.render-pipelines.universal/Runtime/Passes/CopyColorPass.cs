@@ -146,10 +146,9 @@ namespace UnityEngine.Rendering.Universal.Internal
                 source = renderingData.cameraData.renderer.cameraColorTargetHandle;
             }
 
-            bool xrEnabled = renderingData.cameraData.xr.enabled;
-            bool disableFoveatedRenderingForPass = xrEnabled && renderingData.cameraData.xr.supportsFoveatedRendering;
+            bool disableFoveatedRenderingForPass = false;
             ScriptableRenderer.SetRenderTarget(cmd, destination, k_CameraTarget, clearFlag, clearColor);
-            ExecutePass(CommandBufferHelpers.GetRasterCommandBuffer(cmd), m_PassData, source, renderingData.cameraData.xr.enabled, disableFoveatedRenderingForPass);
+            ExecutePass(CommandBufferHelpers.GetRasterCommandBuffer(cmd), m_PassData, source, false, disableFoveatedRenderingForPass);
         }
 
         private static void ExecutePass(RasterCommandBuffer cmd, PassData passData, RTHandle source,  bool useDrawProceduralBlit,  bool disableFoveatedRenderingForPass)
@@ -158,11 +157,6 @@ namespace UnityEngine.Rendering.Universal.Internal
             var copyColorMaterial = passData.copyColorMaterial;
             var downsamplingMethod = passData.downsamplingMethod;
             var sampleOffsetShaderHandle = passData.sampleOffsetShaderHandle;
-
-#if ENABLE_VR && ENABLE_XR_MODULE
-            if (disableFoveatedRenderingForPass)
-                cmd.SetFoveatedRenderingMode(FoveatedRenderingMode.Disabled);
-#endif
 
             if (samplingMaterial == null)
             {
@@ -220,8 +214,8 @@ namespace UnityEngine.Rendering.Universal.Internal
                 destination = UniversalRenderer.CreateRenderGraphTexture(renderGraph, descriptor, "_CameraOpaqueTexture", true, filterMode);
                 passData.destination = builder.UseTextureFragment(destination, 0, IBaseRenderGraphBuilder.AccessFlags.Write);
                 passData.source = builder.UseTexture(source, IBaseRenderGraphBuilder.AccessFlags.Read);
-                passData.useProceduralBlit = renderingData.cameraData.xr.enabled;
-                passData.disableFoveatedRenderingForPass = renderingData.cameraData.xr.enabled && renderingData.cameraData.xr.supportsFoveatedRendering;
+                passData.useProceduralBlit = false;
+                passData.disableFoveatedRenderingForPass = false;
                 passData.samplingMaterial = m_SamplingMaterial;
                 passData.copyColorMaterial = m_CopyColorMaterial;
                 passData.downsamplingMethod = m_DownsamplingMethod;
